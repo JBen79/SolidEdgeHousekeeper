@@ -11,7 +11,7 @@
 Hatch Industries (hatch.com), Breit Ideas (breitideas.com), Pelican Industries (pelican.com), TECHTORY Automation GmbH (techtory.de), BemoRail BV (bemorail.com)
 
 **Contributors**  
-@[Francesco Arfilli] (github @farfilli), @daysanduski, @mmtrebuchet (github), @[o_o ....码], @ChrisNC (github @ChrisClems), @ZaPpInG (github @lrmoreno007), @aalian.khan8036 (github @AalianKhan), @KGeetings (github), @ih0nza (github), @artem1t (github), @Alex_H
+@[Francesco Arfilli] (github @farfilli), @daysanduski, @mmtrebuchet (github), @[o_o ....码], @ChrisNC (github @ChrisClems), @ZaPpInG (github @lrmoreno007), @aalian.khan8036 (github @AalianKhan), @KGeetings (github), @ih0nza (github), @artem1t (github), @Alex_H, Juri Bendoni -- Italy,
 
 **Beta Testing, Bug Reports, and Helpful Feedback**  
 @SatyenB, @n0minus38, @wku, @aredderson, @bshand, @TeeVar, @SeanCresswell, @Jean-Louis, @Jan_Bos, @MonkTheOCD_Engie, @[mike miller], @[Francesco Arfilli], @[Martin Bernhard], @[Derek G], @Chris42, @JasonT, @Bob Henry, @JayJay04, @Cimarian_RMP, @xenia.turon, @nate.arinta5649, @DaveG, @tempod, @64Pacific, @ben.steele6044, @KennyG, @Alex_H, @Nosybottle, @Seva, @HIL, @[o_o ....码], @roger.ribamatic, @jnewell, @[Robin BIoemberg], @Pedro0996, @Imre Szucs, @Bert303, @gir.isi, @BrianVR74, @CareFrame1, @john.matthews3452, @RBoyd347, @[Artur Sampaio], @pkoevesdi, @Jojo15702, @chjchen, @FERNANDO-DALLAGNOLO, @ih0nza, @mefrebo, @KGeetings, @stephan.morin2873, @Nick_Mokrytskyi, @willhfr, @DieCola85, @[Nataniel Tasev], @Brendan.Lee (github @Bogob22), @sven-11111, @robbin70, @collands, @WoutM25, @Monostre, @Stefano-VLN, @PBurkeADS, @Lui10, @schumi1119, @Dirkels
@@ -46,6 +46,8 @@ If this is your first time here, you may want to check out the [<ins>**Quick Sta
 > *Thank you for all your time and effort (...) Also thanks a lot for making it open source. I constantly reference your code for my own macros, which motivates me to make my projects open source as well.*
 
 > *Congratulations on being named a Siemens Techcellence Award Finalist!  Your program, and the community which has grown around it, are truly an inspiration to all!*
+
+> *My daily work involves managing large numbers Solid Edge files.  I have tried many tools to help.  Housekeeper is the best application for my workflow that I have ever used. It is extremely valuable for anyone who needs to process, verify, update, or standardize Solid Edge documents efficiently.*
 
 Responding to the prompt *"Heard any good jokes about Solid Edge Housekeeper?"*, Google's Bard said:
 
@@ -1124,6 +1126,7 @@ Another way to specify a draft template is to use an Expression.  Right-click th
 - **Update Drawing Border:** Replace the drawing border in the file with one of the same name in the template. 
   - **If no matching name: Match by sheet size:** If no names match, this option checks for sheet height and width. If a match is found, that border is used as the replacement. 
   - **If matched by sheet size: Rename sheet:** If a size match is found, this option renames the background to match the template. 
+  - **Add missing drawing borders from template:** Add background sheets that exist in the template but are missing from the file. 
 
 - **Update Styles:** Updates styles from template.  These styles are processed: `DimensionStyles`, `DrawingViewStyles`, `LinearStyles`, `TableStyles`, `TextCharStyles`, `TextStyles`. These are not: `FillStyles`, `HatchPatternStyles`, `SmartFrame2dStyles`. The latter group encountered errors with the current implementation.  The errors were not thoroughly investigated, however. If you need one or more of those styles updated, please ask on the Forum. 
 

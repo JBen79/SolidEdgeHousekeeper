@@ -299,18 +299,138 @@ Public Class UtilsSEApp
 
     Public Function DMIsRunning() As Boolean
         Dim DMApp As RevisionManager.Application = Nothing
+        Dim IsRunning As Boolean = False
 
         Try
             DMApp = CType(GetObject(, "RevisionManager.Application"), RevisionManager.Application)
+            IsRunning = DMApp IsNot Nothing
+        Catch ex As Exception
+            IsRunning = False
+        Finally
+            If DMApp IsNot Nothing Then
+                Try
+                    Runtime.InteropServices.Marshal.FinalReleaseComObject(DMApp)
+                Catch ex As Exception
+                End Try
+                DMApp = Nothing
+            End If
+        End Try
+
+        If Not IsRunning Then IsRunning = DMProcessIsRunning()
+
+        Return IsRunning
+
+    End Function
+
+    Public Function DMForceClose() As Boolean
+
+        If Not DMIsRunning() Then Return True
+
+        Dim DMApp As RevisionManager.Application = Nothing
+
+        ' First request a normal shutdown with alerts disabled.  This usually
+        ' closes the application without needing to terminate its process.
+        Try
+            DMApp = CType(GetObject(, "RevisionManager.Application"), RevisionManager.Application)
+            DMApp.DisplayAlerts = 0
+            DMApp.Quit()
+        Catch ex As Exception
+            ' If the COM server is not responding, the process-level fallback
+            ' below will attempt to terminate it.
+        Finally
+            If DMApp IsNot Nothing Then
+                Try
+                    Runtime.InteropServices.Marshal.FinalReleaseComObject(DMApp)
+                Catch ex As Exception
+                End Try
+                DMApp = Nothing
+            End If
+        End Try
+
+        If WaitForDesignManagerToExit(1500) Then Return True
+
+        ' Fallback: terminate the Design Manager / Revision Manager process.
+        ' Process names have changed between Solid Edge releases, therefore
+        ' the match also checks the window title and executable description.
+        For Each Proc As Process In System.Diagnostics.Process.GetProcesses()
+            Try
+                If IsDesignManagerProcess(Proc) Then
+                    Proc.Kill()
+                    Proc.WaitForExit(5000)
+                End If
+            Catch ex As Exception
+                ' Check the final running state below.  The existing start
+                ' condition will block processing if termination failed.
+            Finally
+                Proc.Dispose()
+            End Try
+        Next
+
+        Return WaitForDesignManagerToExit(5000)
+
+    End Function
+
+    Private Function WaitForDesignManagerToExit(TimeoutMilliseconds As Integer) As Boolean
+
+        Dim Stopwatch As Diagnostics.Stopwatch = Diagnostics.Stopwatch.StartNew()
+
+        Do
+            If Not DMIsRunning() Then Return True
+            Threading.Thread.Sleep(100)
+        Loop While Stopwatch.ElapsedMilliseconds < TimeoutMilliseconds
+
+        Return Not DMIsRunning()
+
+    End Function
+
+    Private Function IsDesignManagerProcess(Proc As Process) As Boolean
+
+        Dim ProcessName As String = ""
+        Dim WindowTitle As String = ""
+        Dim FileDescription As String = ""
+
+        Try
+            ProcessName = Proc.ProcessName.ToLowerInvariant()
         Catch ex As Exception
         End Try
 
-        If Not DMApp Is Nothing Then
-            DMApp = Nothing
+        If {"revisionmanager", "revmanager", "revman", "designmanager", "designmgr", "sedesignmanager", "sedesignmgr"}.Contains(ProcessName) Then
             Return True
-        Else
-            Return False
         End If
+
+        Try
+            WindowTitle = Proc.MainWindowTitle.ToLowerInvariant()
+        Catch ex As Exception
+        End Try
+
+        If WindowTitle.Contains("solid edge design manager") OrElse WindowTitle.Contains("solid edge revision manager") Then
+            Return True
+        End If
+
+        Try
+            FileDescription = Proc.MainModule.FileVersionInfo.FileDescription
+            If FileDescription Is Nothing Then FileDescription = ""
+            FileDescription = FileDescription.ToLowerInvariant()
+        Catch ex As Exception
+        End Try
+
+        Return FileDescription.Contains("solid edge design manager") OrElse
+               FileDescription.Contains("solid edge revision manager")
+
+    End Function
+
+    Private Function DMProcessIsRunning() As Boolean
+
+        For Each Proc As Process In System.Diagnostics.Process.GetProcesses()
+            Try
+                If IsDesignManagerProcess(Proc) Then Return True
+            Catch ex As Exception
+            Finally
+                Proc.Dispose()
+            End Try
+        Next
+
+        Return False
 
     End Function
 

@@ -43,6 +43,19 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         End Set
     End Property
 
+    Private _AddMissingBorders As Boolean
+    Public Property AddMissingBorders As Boolean
+        Get
+            Return _AddMissingBorders
+        End Get
+        Set(value As Boolean)
+            _AddMissingBorders = value
+            If Me.TaskOptionsTLP IsNot Nothing Then
+                CType(ControlsDict(ControlNames.AddMissingBorders.ToString), CheckBox).Checked = value
+            End If
+        End Set
+    End Property
+
     Private _MatchSheetSize As Boolean
     Public Property MatchSheetSize As Boolean
         Get
@@ -102,6 +115,7 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         Browse
         DraftTemplate
         UpdateBorder
+        AddMissingBorders
         MatchSheetSize
         RenameSheet
         UpdateStyles
@@ -131,6 +145,7 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         ' Options
         Me.DraftTemplate = ""
         Me.UpdateBorder = False
+        Me.AddMissingBorders = False
         Me.UpdateStyles = False
 
     End Sub
@@ -302,6 +317,44 @@ Public Class TaskUpdateDrawingStylesFromTemplate
                 End If
             End If
         Next
+
+        ' Refresh tmpSEDocSheetNames
+        tmpSEDocSheetNames.Clear()
+        For Each Sheet As SolidEdgeDraft.Sheet In UC.GetSheets(tmpSEDoc, "Background")
+            tmpSEDocSheetNames.Add(Sheet.Name)
+        Next
+
+        If Me.AddMissingBorders Then
+            For Each TemplateSheet As SolidEdgeDraft.Sheet In TemplateSheets
+                If Not tmpSEDocSheetNames.Contains(TemplateSheet.Name) Then
+                    Dim AddedSheet As SolidEdgeDraft.Sheet = Nothing
+
+                    Try
+                        AddedSheet = tmpSEDoc.Sheets.AddSheet(
+                            TemplateSheet.Name,
+                            SolidEdgeDraft.SheetSectionTypeConstants.igBackgroundSection)
+                        SEApp.DoIdle()
+
+                        AddedSheet.ReplaceBackground(SETemplateDoc.FullName, TemplateSheet.Name)
+                        SEApp.DoIdle()
+
+                        'TaskLogger.AddMessage($"Added missing drawing border '{TemplateSheet.Name}'")
+
+                    Catch ex As Exception
+                        If AddedSheet IsNot Nothing Then
+                            Try
+                                AddedSheet.Delete()
+                                SEApp.DoIdle()
+                            Catch
+                            End Try
+                        End If
+
+                        TaskLogger.AddMessage(
+                            $"Error adding missing drawing border '{TemplateSheet.Name}': {ex.Message}")
+                    End Try
+                End If
+            Next
+        End If
 
     End Sub
 
@@ -786,6 +839,16 @@ Public Class TaskUpdateDrawingStylesFromTemplate
 
         RowIndex += 1
 
+        CheckBox = FormatOptionsCheckBox(ControlNames.AddMissingBorders.ToString, "Add missing drawing borders from template")
+        CheckBox.Padding = New Padding(Me.ControlIndent, 0, 0, 0)
+        AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
+        tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
+        tmpTLPOptions.SetColumnSpan(CheckBox, 2)
+        ControlsDict(CheckBox.Name) = CheckBox
+        CheckBox.Visible = False
+
+        RowIndex += 1
+
         CheckBox = FormatOptionsCheckBox(ControlNames.UpdateStyles.ToString, "Update styles")
         AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
         tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
@@ -882,8 +945,12 @@ Public Class TaskUpdateDrawingStylesFromTemplate
             Case ControlNames.UpdateBorder.ToString
                 Me.UpdateBorder = Checkbox.Checked
 
+                CType(ControlsDict(ControlNames.AddMissingBorders.ToString), CheckBox).Visible = Me.UpdateBorder
                 CType(ControlsDict(ControlNames.MatchSheetSize.ToString), CheckBox).Visible = Me.UpdateBorder
                 CType(ControlsDict(ControlNames.RenameSheet.ToString), CheckBox).Visible = Me.UpdateBorder
+
+            Case ControlNames.AddMissingBorders.ToString
+                Me.AddMissingBorders = Checkbox.Checked
 
             Case ControlNames.MatchSheetSize.ToString
                 Me.MatchSheetSize = Checkbox.Checked
@@ -939,10 +1006,13 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         HelpString += "See the [<ins>**Edit Properties Help Topic**</ins>](#edit-properties) for details on using them.  "
 
         HelpString += vbCrLf + "- **Update Drawing Border:** Replace the drawing border in the file with one of the same name in the template. "
-        HelpString += vbCrLf + "  - **If no matching name: Match by sheet size:** If no names match, this option checks for sheet height and width. "
+        HelpString += vbCrLf + "  - **If no matching name: Match by sheet size:** "
+        HelpString += "If no names match, this option checks for sheet height and width. "
         HelpString += "If a match is found, that border is used as the replacement. "
-        HelpString += vbCrLf + "  - **If matched by sheet size: Rename sheet:** If a size match is found, this option renames "
-        HelpString += "the background to match the template. "
+        HelpString += vbCrLf + "  - **If matched by sheet size: Rename sheet:** "
+        HelpString += "If a size match is found, this option renames the background to match the template. "
+        HelpString += vbCrLf + "  - **Add missing drawing borders from template:** "
+        HelpString += "Add background sheets that exist in the template but are missing from the file. "
 
         HelpString += vbCrLf + vbCrLf
         HelpString += "- **Update Styles:** Updates styles from template.  These styles are processed: "

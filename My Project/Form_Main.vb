@@ -599,6 +599,19 @@ Public Class Form_Main
         End Set
     End Property
 
+    Private _ForceCloseDesignManager As Boolean
+    Public Property ForceCloseDesignManager As Boolean
+        Get
+            Return _ForceCloseDesignManager
+        End Get
+        Set(value As Boolean)
+            _ForceCloseDesignManager = value
+            If Me.IsHandleCreated Then
+                CheckBoxForceCloseDesignManager.Checked = value
+            End If
+        End Set
+    End Property
+
     'Private _WarnSave As Boolean
     'Public Property WarnSave As Boolean
     '    Get
@@ -3002,6 +3015,10 @@ Public Class Form_Main
 
     Private Sub CheckBoxUseCurrentSession_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBoxUseCurrentSession.CheckedChanged
         UseCurrentSession = CheckBoxUseCurrentSession.Checked
+    End Sub
+
+    Private Sub CheckBoxForceCloseDesignManager_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBoxForceCloseDesignManager.CheckedChanged
+        Me.ForceCloseDesignManager = CheckBoxForceCloseDesignManager.Checked
     End Sub
 
     Private Sub BT_Help_Click(sender As Object, e As EventArgs) Handles BT_Help.Click

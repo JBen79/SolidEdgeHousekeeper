@@ -237,7 +237,7 @@ Partial Class FormExpressionEditor
         '
         'TextEditorFormula
         '
-        Me.TextEditorFormula.AutoCompleteBracketsList = New Char() {Global.Microsoft.VisualBasic.ChrW(40), Global.Microsoft.VisualBasic.ChrW(41), Global.Microsoft.VisualBasic.ChrW(123), Global.Microsoft.VisualBasic.ChrW(125), Global.Microsoft.VisualBasic.ChrW(91), Global.Microsoft.VisualBasic.ChrW(93), Global.Microsoft.VisualBasic.ChrW(34), Global.Microsoft.VisualBasic.ChrW(34), Global.Microsoft.VisualBasic.ChrW(39), Global.Microsoft.VisualBasic.ChrW(39)}
+        Me.TextEditorFormula.AutoCompleteBracketsList = New Char() {"("c, ")"c, "{"c, "}"c, "["c, "]"c, """"c, """"c, "'"c, "'"c}
         Me.TextEditorFormula.AutoScrollMinSize = New System.Drawing.Size(27, 14)
         Me.TextEditorFormula.BackBrush = Nothing
         Me.TextEditorFormula.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
@@ -259,7 +259,7 @@ Partial Class FormExpressionEditor
         '
         'TextEditorResults
         '
-        Me.TextEditorResults.AutoCompleteBracketsList = New Char() {Global.Microsoft.VisualBasic.ChrW(40), Global.Microsoft.VisualBasic.ChrW(41), Global.Microsoft.VisualBasic.ChrW(123), Global.Microsoft.VisualBasic.ChrW(125), Global.Microsoft.VisualBasic.ChrW(91), Global.Microsoft.VisualBasic.ChrW(93), Global.Microsoft.VisualBasic.ChrW(34), Global.Microsoft.VisualBasic.ChrW(34), Global.Microsoft.VisualBasic.ChrW(39), Global.Microsoft.VisualBasic.ChrW(39)}
+        Me.TextEditorResults.AutoCompleteBracketsList = New Char() {"("c, ")"c, "{"c, "}"c, "["c, "]"c, """"c, """"c, "'"c, "'"c}
         Me.TextEditorResults.AutoScrollMinSize = New System.Drawing.Size(27, 14)
         Me.TextEditorResults.BackBrush = Nothing
         Me.TextEditorResults.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle

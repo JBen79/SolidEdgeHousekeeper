@@ -323,28 +323,36 @@ Public Class TaskRunExternalProgram
         Try
             ' ############## SNIPPET CODE START ##############
 
-            Dim DisplayedMass As String = ""
+            'Dim DisplayedTotalMass As String = ""
+            'Dim NumericMass As Double
+            'Dim ItemQuantity As Double
+            'Dim Roundoff As Integer
 
-            Dim NumericMass As Double = CDbl("%{System.Mass}".Split(CChar(" "))(0))
-            Dim Roundoff As Integer
+            'ItemQuantity = CDbl("%{Custom.Quantity}")
 
-            If NumericMass >= 100 Then
-                Roundoff = 0
-            ElseIf NumericMass >= 20 Then
-                Roundoff = 1
-            ElseIf NumericMass >= 1 Then
-                Roundoff = 2
-            ElseIf NumericMass < 1 Then
-                For i = 0 To 10
-                    If Conversion.Fix(10 ^ i * NumericMass) > 0 Then
-                        'Math.
-                        Roundoff = i + 1
-                        Exit For
-                    End If
-                Next
-            End If
+            '' Strip units off of mass exposed variable
+            'NumericMass = CDbl("%{Custom.Mass|R1}".Split(CChar(" "))(0))
 
-            DisplayedMass = CStr(Math.Round(NumericMass, Roundoff))
+            'NumericMass = NumericMass * ItemQuantity
+
+            'If NumericMass >= 100 Then
+            '    Roundoff = 0
+            'ElseIf NumericMass >= 10 Then
+            '    Roundoff = 1
+            'ElseIf NumericMass >= 1 Then
+            '    Roundoff = 2
+            'ElseIf NumericMass < 1 Then
+            '    For i As Integer = 1 To 10
+            '        If Math.Floor(10 ^ i * NumericMass) > 0 Then
+            '            Roundoff = i + 1
+            '            Exit For
+            '        End If
+            '    Next
+            'End If
+
+            'DisplayedTotalMass = CStr(Math.Round(NumericMass, Roundoff))
+
+            'Return DisplayedTotalMass
 
             ' ############## SNIPPET CODE END ##############
 

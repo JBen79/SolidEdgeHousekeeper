@@ -39,6 +39,18 @@ Public Class UtilsExecute
             Exit Sub
         End If
 
+        'If FMain.ForceCloseDesignManager Then
+        '    FMain.TextBoxStatus.Text = "Closing Solid Edge Design Manager..."
+        '    System.Windows.Forms.Application.DoEvents()
+
+        '    If Not Me.USEA.DMForceClose() Then
+        '        FMain.TextBoxStatus.Text = "Unable to close Solid Edge Design Manager.  Processing was not started."
+        '        MsgBox(FMain.TextBoxStatus.Text, MsgBoxStyle.Exclamation Or MsgBoxStyle.OkOnly)
+        '        FMain.Cursor = Cursors.Default
+        '        Exit Sub
+        '    End If
+        'End If
+
         Dim UFL As New UtilsFileList(FMain)
 
         FilesToProcessTotal = UFL.GetTotalFilesToProcess()
@@ -150,8 +162,21 @@ Public Class UtilsExecute
             StartLogger.AddMessage("Cannot use current session AND run in background.  Disable one or the other on the Configuration Tab -- General Page.")
         End If
 
-        If Me.USEA.DMIsRunning() Then
-            StartLogger.AddMessage("Close Revision Manager")
+        If Me.USEA.DMIsRunning Then
+            If Not FMain.ForceCloseDesignManager Then
+                StartLogger.AddMessage("Close Design Manager")
+            Else
+                FMain.TextBoxStatus.Text = "Closing Design Manager..."
+                System.Windows.Forms.Application.DoEvents()
+
+                If Not Me.USEA.DMForceClose() Then
+                    'FMain.TextBoxStatus.Text = "Unable to close Design Manager automatically.  Please close manually."
+                    'MsgBox(FMain.TextBoxStatus.Text, MsgBoxStyle.Exclamation Or MsgBoxStyle.OkOnly)
+                    'FMain.Cursor = Cursors.Default
+                    'Exit Sub
+                    StartLogger.AddMessage("Unable to close Design Manager automatically.  Please close manually.")
+                End If
+            End If
         End If
 
         If FMain.ListViewFilesOutOfDate Then
