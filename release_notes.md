@@ -19,7 +19,7 @@ We'll get right to the updates, but first some exciting news -- Housekeeper has 
 
 > *We are a company based in the Netherlands and use your program often to clean up our Solid Edge models.  Thank you for a well engineered piece of open source software, and keep up the good work.*
 
-And there's more...  Our very own **@Alex_H** is Housekeeper's latest contributor!  He added the ability to save models in the new DSTV format.  Can't wait for you to check it out!
+And there's more -- Housekeeper has two new **Contributors!**  **@Alex_H** added the ability to save models in the new DSTV format.  And **Juri Bendoni** provided an option to add missing template backgrounds in `Update drawing styles from template`.  He also added an option to automatically close Design Manager before processing begins.  Can't wait for you to check out their handiwork!
 
 Now, on to those updates...
 
@@ -80,6 +80,20 @@ The option is presented only if the installed version of Solid Edge supports it.
 
 See the [<ins>**Save Model As Help Topic**</ins>](https://github.com/rmcanany/SolidEdgeHousekeeper/blob/master/HelpTopics.md#save-model-as) for details.
 
+### Update Drawing Styles from Template
+
+Contributed by **Juri Bendoni.**  Thank you!
+
+Provided an option to add missing template backgrounds.
+
+<p align="center">
+  <img src="My%20Project/media/task_update_drawing_styles_from_template.png">
+</p>
+
+This is handy for getting draft files fully up to current standards, especially when ongoing revisions to them are an everyday occurrence.
+
+See the [<ins>**Update Drawing Styles from Template Help Topic**</ins>](https://github.com/rmcanany/SolidEdgeHousekeeper/blob/master/HelpTopics.md#update-drawing-styles-from-template) for details.
+
 ### Check Links
 
 Changed how search directories are specified for `Misplaced links`.  (Thank you **@schumi1119!**)  Previously they were implied from the file search list on the **Home Tab**.  Now they are specified explicitly in the command options.
@@ -127,6 +141,7 @@ See the [<ins>**Run External Program Help Topic**</ins>](https://github.com/rmca
 
 ### Other
 
+- Added an option to automatically close Design Manager when processing begins.  (Contributed by **Juri Bendone.**  Thank you!)  Housekeeper cannot run with DM open.  This avoids one more unneeded interruption in your busy day.  Enable it on the **Configuration Tab -- General Page.**
 - Fixed a regression in `Save As` where illegal file name characters were no longer being replaced.  (Thank you **@n0minus38!**)
 - Fixed an issue in `Update Physical Properties` where a check of the mass in the variable table was not accounting for localized names.  (Thank you **@Stefano-VLN!**)
 - Fixed an issue with top-level assembly search where non-existent draft files were being added to the list.  (Thank you **@Nick_Mokrytskyi​!**)
