@@ -10,8 +10,8 @@
 
 Public Class Form_Main
 
-    Public Property Version As String = "2026.2"  ' Two fields, both integers: Year.ReleaseNumber.
-    Public Property PreviewVersion As String = "" ' ######### Empty string for a release
+    Public Property Version As String = "2026.3"  ' Two fields, both integers: Year.ReleaseNumber.
+    Public Property PreviewVersion As String = "01" ' ######### Empty string for a release
 
     Private lvwColumnSorter As ListViewColumnSorter
 
@@ -1221,6 +1221,14 @@ Public Class Form_Main
         '###### INITIALIZE PREFERENCES IF NEEDED ######
 
         If ShowSplash Then Splash.UpdateStatus("Loading Preferences")
+
+        If Not FileIO.FileSystem.DirectoryExists(UP.GetPreferencesDirectory) Then
+            ' First run
+            Me.FilterAsm = True
+            Me.FilterPar = True
+            Me.FilterPsm = True
+            Me.FilterDft = True
+        End If
 
         UP.CreatePreferencesDirectory()
         UP.CreateFilenameCharmap()
