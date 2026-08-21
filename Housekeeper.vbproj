@@ -417,7 +417,6 @@
     <Compile Include="My Project\TaskEditProperties.vb" />
     <Compile Include="My Project\TaskEditVariables.vb" />
     <Compile Include="My Project\TaskFitView.vb" />
-    <Compile Include="My Project\TaskFinalizeModelAndDrawings.vb" />
     <Compile Include="My Project\TaskCreateDrawingOfFlatPattern.vb" />
     <Compile Include="My Project\TaskShowHideConstructions.vb" />
     <Compile Include="My Project\TaskOpenSave.vb" />

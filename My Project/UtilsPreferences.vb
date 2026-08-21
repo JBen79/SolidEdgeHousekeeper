@@ -987,8 +987,6 @@ Public Class UtilsPreferences
         If Splash IsNot Nothing Then Splash.UpdateStatus(TaskList(TaskList.Count - 1).Name)
         TaskList.Add(New TaskFitView)
         If Splash IsNot Nothing Then Splash.UpdateStatus(TaskList(TaskList.Count - 1).Name)
-        TaskList.Add(New TaskFinalizeModelAndDrawings)
-        If Splash IsNot Nothing Then Splash.UpdateStatus(TaskList(TaskList.Count - 1).Name)
 
         ' Check
         TaskList.Add(New TaskCheckInterference)

@@ -29,6 +29,19 @@ Public Class TaskCheckDrawings
         End Set
     End Property
 
+    Private _DrawingTablesOutOfDate As Boolean
+    Public Property DrawingTablesOutOfDate As Boolean
+        Get
+            Return _DrawingTablesOutOfDate
+        End Get
+        Set(value As Boolean)
+            _DrawingTablesOutOfDate = value
+            If Me.TaskOptionsTLP IsNot Nothing Then
+                CType(ControlsDict(ControlNames.DrawingTablesOutOfDate.ToString), CheckBox).Checked = value
+            End If
+        End Set
+    End Property
+
     Private _DetachedDimensionsOrAnnotations As Boolean
     Public Property DetachedDimensionsOrAnnotations As Boolean
         Get
@@ -110,6 +123,7 @@ Public Class TaskCheckDrawings
     Enum ControlNames
         CheckAll
         DrawingViewsOutOfDate
+        DrawingTablesOutOfDate
         DetachedDimensionsOrAnnotations
         DrawingViewOnBackgroundSheet
         DrawInView
@@ -140,6 +154,7 @@ Public Class TaskCheckDrawings
 
         ' Options
         Me.DrawingViewsOutOfDate = False
+        Me.DrawingTablesOutOfDate = False
         Me.DetachedDimensionsOrAnnotations = False
         Me.DrawingViewOnBackgroundSheet = False
         Me.DrawInView = False
@@ -182,6 +197,8 @@ Public Class TaskCheckDrawings
         Dim tmpSEDoc = CType(SEDoc, SolidEdgeDraft.DraftDocument)
 
         If Me.DrawingViewsOutOfDate Then CheckDrawingViewsOutOfDate(tmpSEDoc)
+
+        If Me.DrawingTablesOutOfDate Then CheckDrawingTablesOutOfDate(tmpSEDoc)
 
         If DetachedDimensionsOrAnnotations Then CheckDetachedDimensionsOrAnnotations(tmpSEDoc)
 
@@ -246,6 +263,50 @@ Public Class TaskCheckDrawings
             Next DrawingView
         Next Sheet
     End Sub
+
+    Private Sub CheckDrawingTablesOutOfDate(tmpSEDoc As SolidEdgeDraft.DraftDocument)
+
+        Dim s As String
+
+        ' PartsList, BlockTable, and ConnectorTable expose IsUpToDate.
+        ' HoleTable, DraftBendTable, and generic Table expose Update(), but
+        ' do not expose an IsUpToDate property in the Solid Edge Draft API.
+
+        Try
+            For Each PartsList As SolidEdgeDraft.PartsList In tmpSEDoc.PartsLists
+                If Not PartsList.IsUpToDate Then
+                    s = "Parts list out of date"
+                    If Not TaskLogger.ContainsMessage(s) Then TaskLogger.AddMessage(s)
+                End If
+            Next
+        Catch ex As Exception
+            TaskLogger.AddMessage($"Unable to check parts lists: {ex.Message}")
+        End Try
+
+        Try
+            For Each BlockTable As SolidEdgeDraft.BlockTable In tmpSEDoc.BlockTables
+                If Not BlockTable.IsUpToDate Then
+                    s = "Block table out of date"
+                    If Not TaskLogger.ContainsMessage(s) Then TaskLogger.AddMessage(s)
+                End If
+            Next
+        Catch ex As Exception
+            TaskLogger.AddMessage($"Unable to check block tables: {ex.Message}")
+        End Try
+
+        Try
+            For Each ConnectorTable As SolidEdgeDraft.ConnectorTable In tmpSEDoc.ConnectorTables
+                If Not ConnectorTable.IsUpToDate Then
+                    s = "Connector table out of date"
+                    If Not TaskLogger.ContainsMessage(s) Then TaskLogger.AddMessage(s)
+                End If
+            Next
+        Catch ex As Exception
+            TaskLogger.AddMessage($"Unable to check connector tables: {ex.Message}")
+        End Try
+
+    End Sub
+
 
     Private Sub CheckDetachedDimensionsOrAnnotations(tmpSEDoc As SolidEdgeDraft.DraftDocument)
 
@@ -482,6 +543,14 @@ Public Class TaskCheckDrawings
 
         RowIndex += 1
 
+        CheckBox = FormatOptionsCheckBox(ControlNames.DrawingTablesOutOfDate.ToString, "Out of date drawing tables")
+        AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
+        tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
+        tmpTLPOptions.SetColumnSpan(CheckBox, 2)
+        ControlsDict(CheckBox.Name) = CheckBox
+
+        RowIndex += 1
+
         CheckBox = FormatOptionsCheckBox(ControlNames.DetachedDimensionsOrAnnotations.ToString, "Detatched dimensions or annotations")
         AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
         tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
@@ -541,6 +610,7 @@ Public Class TaskCheckDrawings
             End If
 
             tf = Me.DrawingViewsOutOfDate
+            tf = tf Or Me.DrawingTablesOutOfDate
             tf = tf Or Me.DetachedDimensionsOrAnnotations
             tf = tf Or Me.DrawingViewOnBackgroundSheet
             tf = tf Or Me.DrawInView
@@ -567,6 +637,7 @@ Public Class TaskCheckDrawings
 
                 If Me.CheckAll Then
                     Me.DrawingViewsOutOfDate = True
+                    Me.DrawingTablesOutOfDate = True
                     Me.DetachedDimensionsOrAnnotations = True
                     Me.DrawingViewOnBackgroundSheet = True
                     Me.DrawInView = True
@@ -574,6 +645,7 @@ Public Class TaskCheckDrawings
                     Me.SheetScale = True
 
                     CType(ControlsDict(ControlNames.DrawingViewsOutOfDate.ToString), CheckBox).Checked = True
+                    CType(ControlsDict(ControlNames.DrawingTablesOutOfDate.ToString), CheckBox).Checked = True
                     CType(ControlsDict(ControlNames.DetachedDimensionsOrAnnotations.ToString), CheckBox).Checked = True
                     CType(ControlsDict(ControlNames.DrawingViewOnBackgroundSheet.ToString), CheckBox).Checked = True
                     CType(ControlsDict(ControlNames.DrawInView.ToString), CheckBox).Checked = True
@@ -583,6 +655,7 @@ Public Class TaskCheckDrawings
                 End If
 
                 CType(ControlsDict(ControlNames.DrawingViewsOutOfDate.ToString), CheckBox).Visible = Not Checkbox.Checked
+                CType(ControlsDict(ControlNames.DrawingTablesOutOfDate.ToString), CheckBox).Visible = Not Checkbox.Checked
                 CType(ControlsDict(ControlNames.DetachedDimensionsOrAnnotations.ToString), CheckBox).Visible = Not Checkbox.Checked
                 CType(ControlsDict(ControlNames.DrawingViewOnBackgroundSheet.ToString), CheckBox).Visible = Not Checkbox.Checked
                 CType(ControlsDict(ControlNames.DrawInView.ToString), CheckBox).Visible = Not Checkbox.Checked
@@ -592,6 +665,9 @@ Public Class TaskCheckDrawings
 
             Case ControlNames.DrawingViewsOutOfDate.ToString
                 Me.DrawingViewsOutOfDate = Checkbox.Checked
+
+            Case ControlNames.DrawingTablesOutOfDate.ToString
+                Me.DrawingTablesOutOfDate = Checkbox.Checked
 
             Case ControlNames.DetachedDimensionsOrAnnotations.ToString
                 Me.DetachedDimensionsOrAnnotations = Checkbox.Checked
@@ -628,6 +704,8 @@ Public Class TaskCheckDrawings
 
         HelpString += vbCrLf + vbCrLf + "The options are: "
         HelpString += vbCrLf + "- `Drawing views out of date`: Checks if any drawing views, and associated models, are not up to date. "
+        HelpString += vbCrLf + "- `Out of date drawing tables`: Checks Parts Lists, Block Tables, and Connector Tables for an out-of-date status. "
+        HelpString += "Hole Tables, Bend Tables, and User Tables can be updated by `Update drawing views`, but the Solid Edge API does not expose an equivalent out-of-date status for those table types. "
         HelpString += vbCrLf + "- `Detached dimensions or annotations`: Checks that dimensions, "
         HelpString += "balloons, callouts, etc. are attached to geometry in the drawing. "
         HelpString += vbCrLf + "- `Drawing view on background sheet`: Checks background sheets for the presence of drawing views. "
