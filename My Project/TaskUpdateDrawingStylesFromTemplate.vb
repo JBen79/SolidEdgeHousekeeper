@@ -56,6 +56,19 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         End Set
     End Property
 
+    Private _UpdateLibraryBlocks As Boolean
+    Public Property UpdateLibraryBlocks As Boolean
+        Get
+            Return _UpdateLibraryBlocks
+        End Get
+        Set(value As Boolean)
+            _UpdateLibraryBlocks = value
+            If Me.TaskOptionsTLP IsNot Nothing Then
+                CType(ControlsDict(ControlNames.UpdateLibraryBlocks.ToString), CheckBox).Checked = value
+            End If
+        End Set
+    End Property
+
     Private _MatchSheetSize As Boolean
     Public Property MatchSheetSize As Boolean
         Get
@@ -116,6 +129,7 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         DraftTemplate
         UpdateBorder
         AddMissingBorders
+        UpdateLibraryBlocks
         MatchSheetSize
         RenameSheet
         UpdateStyles
@@ -146,6 +160,7 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         Me.DraftTemplate = ""
         Me.UpdateBorder = False
         Me.AddMissingBorders = False
+        Me.UpdateLibraryBlocks = False
         Me.UpdateStyles = False
 
     End Sub
@@ -203,7 +218,10 @@ Public Class TaskUpdateDrawingStylesFromTemplate
 
         If Me.UpdateBorder And SETemplateDoc IsNot Nothing Then
             DoReplaceBorders(tmpSEDoc, SETemplateDoc, SEApp)
+        End If
 
+        If Me.UpdateLibraryBlocks And SETemplateDoc IsNot Nothing Then
+            DoUpdateLibraryBlocks(tmpSEDoc, SETemplateDoc, SEApp)
         End If
 
 
@@ -357,6 +375,39 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         End If
 
     End Sub
+
+    Private Sub DoUpdateLibraryBlocks(
+        tmpSEDoc As SolidEdgeDraft.DraftDocument,
+        SETemplateDoc As SolidEdgeDraft.DraftDocument,
+        SEApp As SolidEdgeFramework.Application)
+
+        Dim DocumentBlockNames As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+
+        For Each DocumentBlock As SolidEdgeDraft.Block In tmpSEDoc.Blocks
+            DocumentBlockNames.Add(DocumentBlock.Name)
+        Next
+
+        For Each TemplateBlock As SolidEdgeDraft.Block In SETemplateDoc.Blocks
+            Try
+                If DocumentBlockNames.Contains(TemplateBlock.Name) Then
+                    ' Replace the existing block definition and preserve its occurrences.
+                    tmpSEDoc.Blocks.ReplaceBlock(TemplateBlock)
+                Else
+                    ' Copy block definitions that are present only in the template.
+                    tmpSEDoc.Blocks.CopyBlock(TemplateBlock)
+                    DocumentBlockNames.Add(TemplateBlock.Name)
+                End If
+
+                SEApp.DoIdle()
+
+            Catch ex As Exception
+                TaskLogger.AddMessage(
+                    $"Error copying or updating library block '{TemplateBlock.Name}': {ex.Message}")
+            End Try
+        Next
+
+    End Sub
+
 
     Private Function DocStyleNotInTemplate(
        DocStyleNameList As List(Of String),
@@ -849,6 +900,14 @@ Public Class TaskUpdateDrawingStylesFromTemplate
 
         RowIndex += 1
 
+        CheckBox = FormatOptionsCheckBox(ControlNames.UpdateLibraryBlocks.ToString, "Copy/update library blocks from template")
+        AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
+        tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
+        tmpTLPOptions.SetColumnSpan(CheckBox, 2)
+        ControlsDict(CheckBox.Name) = CheckBox
+
+        RowIndex += 1
+
         CheckBox = FormatOptionsCheckBox(ControlNames.UpdateStyles.ToString, "Update styles")
         AddHandler CheckBox.CheckedChanged, AddressOf CheckBoxOptions_Check_Changed
         tmpTLPOptions.Controls.Add(CheckBox, 0, RowIndex)
@@ -880,8 +939,8 @@ Public Class TaskUpdateDrawingStylesFromTemplate
                 ErrorLogger.AddMessage("Select a valid drawing template")
             End If
 
-            If Not (Me.UpdateBorder Or Me.UpdateStyles) Then
-                ErrorLogger.AddMessage("Select Update border, Update styles, or both")
+            If Not (Me.UpdateBorder Or Me.UpdateLibraryBlocks Or Me.UpdateStyles) Then
+                ErrorLogger.AddMessage("Select Update border, Copy/update library blocks, Update styles, or a combination")
             End If
 
         End If
@@ -958,6 +1017,9 @@ Public Class TaskUpdateDrawingStylesFromTemplate
             Case ControlNames.RenameSheet.ToString
                 Me.RenameSheet = Checkbox.Checked
 
+            Case ControlNames.UpdateLibraryBlocks.ToString
+                Me.UpdateLibraryBlocks = Checkbox.Checked
+
             Case ControlNames.UpdateStyles.ToString
                 Me.UpdateStyles = Checkbox.Checked
 
@@ -991,7 +1053,7 @@ Public Class TaskUpdateDrawingStylesFromTemplate
 
     Private Function GetHelpText() As String
         Dim HelpString As String
-        HelpString = "Updates styles and/or background sheets from a template you specify. "
+        HelpString = "Updates styles, background sheets, and/or library blocks from a template you specify. "
 
         HelpString += vbCrLf + vbCrLf + "![UpdateDrawingStylesFromTemplate](My%20Project/media/task_update_drawing_styles_from_template.png)"
 
@@ -1013,6 +1075,11 @@ Public Class TaskUpdateDrawingStylesFromTemplate
         HelpString += "If a size match is found, this option renames the background to match the template. "
         HelpString += vbCrLf + "  - **Add missing drawing borders from template:** "
         HelpString += "Add background sheets that exist in the template but are missing from the file. "
+
+        HelpString += vbCrLf + vbCrLf
+        HelpString += "- **Copy/update library blocks from template:** "
+        HelpString += "Copies block definitions that are missing from the file and replaces same-name block definitions with those from the template. "
+        HelpString += "Existing block occurrences remain in place. "
 
         HelpString += vbCrLf + vbCrLf
         HelpString += "- **Update Styles:** Updates styles from template.  These styles are processed: "
